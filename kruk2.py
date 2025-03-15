@@ -111,10 +111,11 @@ def check_answer(question, user_answer, lesson_material):
         return False
 
 class Account():
-    def __init__(self, user_name, role="", teacher=""):
+    def __init__(self, user_name, role="", teacher="", students=""):
         self.user_name = user_name
         self.role = role
         self.teacher = teacher
+        self.students = students
 
 
 def set_accounts(accounts, chats_user, chat_id):
@@ -127,7 +128,8 @@ def encode_account(account):
         "type": "account",
         "user_name": account.user_name,
         "role": account.role,
-        "teasher": account.teasher
+        "teasher": account.teacher,
+        "sudents": account.students
     }
 
 
@@ -135,8 +137,9 @@ def decode_account(dictionary):
     if dictionary.get("type") == "account":
         user_name = dictionary.get("user_name")
         role = dictionary.get("role")
-        teasher = dictionary.get("teasher")
-        account = Account(user_name, role, teasher)
+        teacher = dictionary.get("teacher")
+        students = dictionary.get("students")
+        account = Account(user_name, role, teacher, students)
         return account
     else:
         return dictionary
@@ -173,6 +176,7 @@ def analyze_results(message):
     if user_state.get("step") != "waiting_for_analysis":
         bot.send_message(chat_id, "Сначала завершите тест, чтобы получить анализ.")
         return
+
 
     # Генерация фидбека на основе результатов теста
     feedback_prompt = f"""
@@ -315,7 +319,7 @@ def handle_message(message):
         user_data[chat_id]["step"] = "waiting_for_student_action"
         account.role = "ученик"
         set_accounts(accounts, chats_user, message.chat.id)
-        
+
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         item1 = types.KeyboardButton("Пройти тест")
         markup.add(item1)
